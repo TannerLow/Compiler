@@ -9,17 +9,18 @@ int main(){\
 
 ### tokenizes into...
 
-int\
-main\
-(\
-)\
-{\
-print\
-(\
-"\
-hello\
-world!\
-"\
-)\
-;\
+```c++
+int
+main
+(
+)
+{
+print
+(
+"
+hello world!
+"
+)
+;
 }
+```
