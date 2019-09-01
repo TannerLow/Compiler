@@ -4,7 +4,8 @@ using namespace std;
 
 //Tokens List
 string reservedWord[] = {"int", "print"};
-char reservedChar[] = {'(', ')', '{', '}', '\"', ';' };
+char reservedChar[] = {'(', ')', '{', '}', ';' };
+const char delimeter = '\"';
 
 string vectorToString(vector<char>);
 bool isReservedChar(char);
@@ -48,6 +49,23 @@ vector<string> Lexer::tokenize()
 				tokens.push_back(vectorToString(token));
 				token.clear();
 			}
+			continue;
+		case delimeter :
+			if (!token.empty()) {
+				tokens.push_back(vectorToString(token));
+				token.clear();
+			}
+			tokens.push_back({ temp });
+			while (file.get(temp) && temp != delimeter) {
+				token.push_back(temp);
+			}
+			if (!file.eof()) {
+				tokens.push_back(vectorToString(token));
+				token.clear();
+				tokens.push_back({temp});
+			}
+			else
+				tokens.push_back("ERROR");
 			continue;
 		default :
 			if (isReservedChar(temp)) {
