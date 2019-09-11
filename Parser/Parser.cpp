@@ -3,6 +3,8 @@
 #include <string.h>
 
 using namespace std;
+//prototypes
+bool isValidType(string);
 
 //Default Constructor, should not be used
 Parser::Parser()
@@ -11,19 +13,19 @@ Parser::Parser()
 	cout << "No file specified to the Lexer." << endl;
 }
 
-Parser::Parser(string filename)
+Parser::Parser(vector<string> tokens, string filename)
 {
 	this->filename = filename;
-	file.open(filename);
+	this->tokens = tokens;
+	it = tokens.begin();
 	parseTree = parse();
-	file.close();
 }
 //Parses list of tokens into a ParseTree
 ParseTree* Parser::parse()
 {
 	//libarary
 	ParseTree* tree = new ParseTree(filename);
-	while (file.peek()) {
+	while (it < tokens.end()) {
 		ParseTree* function = parseFunction();
 		if (function == nullptr) {
 			cout << "Invalid Function" << endl;
@@ -42,16 +44,16 @@ ParseTree* Parser::parseFunction()
 	string type, identifier;
 
 	//get function return type
-	getline(file, type);
-	if (isValidType(type));
-	else {
+	type = *it++;
+	if (!isValidType(type)) {
 		cout << "Return type not valid" << endl;
 		return nullptr;
 	}
 	function->addNode(new ParseTree(type));
 
 	//get function identifier
-	if (getline(file, identifier));
+	if (it < tokens.end())
+		identifier = *it++;
 	else {
 		cout << "Expected function identifier, reached EOF" << endl;
 		return nullptr;
@@ -68,7 +70,7 @@ ParseTree* Parser::parseFunction()
 
 	//get function statement
 	ParseTree* statement = new ParseTree("Statement");
-	if (file.peek()) {
+	if (it < tokens.end()) {
 		ParseTree* _statement = parseStatement();//possible problem code
 		if (_statement == nullptr) {
 			cout << "Invalid Statement" << endl;
@@ -88,15 +90,18 @@ ParseTree* Parser::parseFunction()
 ParseTree* Parser::parseParameters() {
 	ParseTree* parameters = new ParseTree("Parameter(s)");
 	string line;
-	if (getline(file, line) && line == "(") {
-		if (!getline(file, line)) {
+	if (it < tokens.end())
+		line = *it++;
+	if (line == "(") {
+		if (it >= tokens.end()) {
 			cout << "Prematurely reached EOF" << endl;
 			return nullptr;
 		}
+		line = *it++;
 		while (line != ")") {
 			parameters->addNode(parseParameter());
 			//check if parameter is closed off properly
-			if (!file.peek()) {
+			if (it >= tokens.end()) {
 				cout << "Expected to reach ), reached EOF" << endl;
 				return nullptr;
 			}
@@ -115,17 +120,19 @@ ParseTree* Parser::parseParameter() {
 	string type, identifier;
 
 	//get parameter type
-	if (!getline(file, type)) {
+	if (it >= tokens.end()) {
 		cout << "Expected type for parameter, reached EOF" << endl;
 		return nullptr;
- 	}
+	}
+	type = *it++;
 	parameter->addNode(new ParseTree(type));
 
 	//get parameter identifier
-	if (!getline(file, type)) {
+	if (it >= tokens.end()) {
 		cout << "Expected variable identifier, reached EOF" << endl;
 		return nullptr;
 	}
+	identifier = *it++;
 	parameter->addNode(new ParseTree(identifier));
 	return nullptr;
 }

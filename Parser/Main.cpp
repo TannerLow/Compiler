@@ -4,5 +4,5 @@
 using namespace std;
 
 int main() {
-	Parser p("test.txt");
+	//Parser p("test.txt");
 }
