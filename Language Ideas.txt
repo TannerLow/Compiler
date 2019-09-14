@@ -1,0 +1,19 @@
+TNT Language
+
+int add(int a,b){ //parameters with no type take the preceding parameter's type
+		  //preceding parameter must have a valid type
+	return a + b;
+};
+
+2**3 //2^3
+
+int i;
+if((i = 5) == 5); //let "=" statements count as expressions = to there new value, example returns true
+
+if(i = 5) //equivalent to if(5)
+
+int,String running(int a,b,c,d); //mulitple return types
+
+binary //maybe
+
+ 

@@ -97,7 +97,9 @@ ParseTree* Parser::parseParameters() {
 			cout << "Prematurely reached EOF" << endl;
 			return nullptr;
 		}
-		line = *it++;
+		line = *it++;//gets token after ( could be type
+					 //maybe get rid of plus so parse parameter doesnt 
+					 //skip the type of the first parameter
 		while (line != ")") {
 			parameters->addNode(parseParameter());
 			//check if parameter is closed off properly
@@ -105,6 +107,8 @@ ParseTree* Parser::parseParameters() {
 				cout << "Expected to reach ), reached EOF" << endl;
 				return nullptr;
 			}
+			line = *it++;
+			//Not sure about this while loop, Make sure it finds )
 		}
 	}
 	else {
