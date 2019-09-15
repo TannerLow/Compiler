@@ -16,9 +16,17 @@ void ParseTree::addNode(ParseTree* node) {
 	nodes.push_back(node);
 }
 
+int ParseTree::nodeCount(){
+	return nodes.size();
+}
+
 std::string ParseTree::getData()
 {
 	return data;
+}
+
+void ParseTree::setData(string newData) {
+	data = newData;
 }
 //print tree with visual format
 void ParseTree::printTree()

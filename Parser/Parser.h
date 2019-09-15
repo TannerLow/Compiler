@@ -2,7 +2,6 @@
 #include <string>
 //#include <fstream>
 #include "ParseTree.h"
-
 #include <vector>
 
 class Parser
@@ -17,10 +16,9 @@ private:
 	ParseTree* parseParameter();
 	ParseTree* parseStatement();
 	//Variables
-	////std::ifstream file;
 	std::string filename;
 	ParseTree* parseTree;
-
 	std::vector<std::string> tokens;
 	std::vector<std::string>::iterator it;
+	std::string precedingType;
 };

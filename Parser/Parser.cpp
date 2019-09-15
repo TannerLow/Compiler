@@ -69,8 +69,8 @@ ParseTree* Parser::parseFunction()
 	}
 
 	//get function statement
-	ParseTree* statement = new ParseTree("Statement");
-	if (it < tokens.end()) {
+	ParseTree* statement = new ParseTree("Statement");//should change to just parse the statement 
+	if (it < tokens.end()) {						  //and not have a node with just the word statement
 		ParseTree* _statement = parseStatement();//possible problem code
 		if (_statement == nullptr) {
 			cout << "Invalid Statement" << endl;
@@ -88,6 +88,7 @@ ParseTree* Parser::parseFunction()
 //Parses the next set of parameters in the file
 //if nullptr is returned then an error occurred
 ParseTree* Parser::parseParameters() {
+	precedingType = "";
 	ParseTree* parameters = new ParseTree("Parameter(s)");
 	string line;
 	if (it < tokens.end())
@@ -97,9 +98,8 @@ ParseTree* Parser::parseParameters() {
 			cout << "Prematurely reached EOF" << endl;
 			return nullptr;
 		}
-		line = *it++;//gets token after ( could be type
-					 //maybe get rid of plus so parse parameter doesnt 
-					 //skip the type of the first parameter
+		line = *it;//No ++, just reads the line to see if it is ')'
+
 		while (line != ")") {
 			parameters->addNode(parseParameter());
 			//check if parameter is closed off properly
@@ -107,38 +107,65 @@ ParseTree* Parser::parseParameters() {
 				cout << "Expected to reach ), reached EOF" << endl;
 				return nullptr;
 			}
-			line = *it++;
-			//Not sure about this while loop, Make sure it finds )
+			line = *it;
 		}
+		//check if no parameters were found and modify accordingly
+		if (parameters->nodeCount() == 0) 
+			parameters->setData("No Parameters");
+
+		//return the constructed parameters tree
+		return parameters;
 	}
 	else {
 		cout << "Expected (, reached EOF or ( is missing" << endl;
 		return nullptr;
 	}
-	return nullptr;
 }
 //Parses the next parameter in the file
 //if nullptr is returned then an error occured
 ParseTree* Parser::parseParameter() {
-	ParseTree* parameter = new ParseTree("Parameter");
+	ParseTree* parameter = new ParseTree("parameter");
 	string type, identifier;
+	vector<string> parameterTokens;
 
-	//get parameter type
-	if (it >= tokens.end()) {
-		cout << "Expected type for parameter, reached EOF" << endl;
+	//get tokens of parameter
+	while (it < tokens.end() && *it != "," && *it != ")") {
+		parameterTokens.push_back(*it++);
+	}
+	//handle preceeding types and invalid parameters
+	switch (parameterTokens.size()) {
+	case 2: {
+		precedingType = parameterTokens[0];
+		type = precedingType;
+		identifier = parameterTokens[1];
+		break;
+	}
+	case 1: {
+		if (precedingType != "")
+			type = precedingType;
+		else {
+			cout << "Invalid parameter, missing type" << endl;
+			return nullptr;
+		}
+		identifier = parameterTokens[0];
+		break;
+	}
+	case 0:
+		//error (,)
+		cout << "Invalid parameter" << endl;
+		return nullptr;
+	default:
+		//error more than 2 parameter tokens
+		cout << "Invalid parameter, more than 2 tokens found" << endl;
 		return nullptr;
 	}
-	type = *it++;
+	//build parameter and return
 	parameter->addNode(new ParseTree(type));
-
-	//get parameter identifier
-	if (it >= tokens.end()) {
-		cout << "Expected variable identifier, reached EOF" << endl;
-		return nullptr;
-	}
-	identifier = *it++;
 	parameter->addNode(new ParseTree(identifier));
-	return nullptr;
+	//skip ',' tokens
+	if (*it == ",")
+		it++;
+	return parameter;
 }
 
 //Parses the next statement in the file
@@ -148,6 +175,7 @@ ParseTree* Parser::parseStatement()
 	return nullptr;
 }
 //Determines if a given type is a valid type for the language
+//should remove to allow custom data types in the future
 bool isValidType(string type) {
 	if (type == "int")
 		return true;

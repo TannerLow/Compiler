@@ -5,4 +5,4 @@ This is going to be a code compiler for my made up language TnT. So far I have b
 Reads text from a file and breaks it into tokens.
 
 ## Parser
-Reads tokens from a text file and parses them into a parse tree.
+Reads tokens from a text file and generates a corresponding parse tree.
