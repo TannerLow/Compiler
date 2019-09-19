@@ -16,12 +16,14 @@ private:
 	ParseTree* parseParameter();
 	ParseTree* parseStatement();
 	ParseTree* parseExpression();
+
 	//Statement Paths
 	ParseTree* parseCompound();
 	ParseTree* parseIf();
 	ParseTree* parseWhile();
 	ParseTree* parseFor();
 	ParseTree* parseReturn();
+
 	//Variables
 	std::string filename;
 	ParseTree* parseTree;

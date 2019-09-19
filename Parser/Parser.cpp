@@ -4,7 +4,7 @@
 
 using namespace std;
 //prototypes
-bool isValidType(string);
+
 
 //Default Constructor, should not be used
 Parser::Parser()
@@ -36,7 +36,6 @@ ParseTree* Parser::parse()
 	return tree;
 }
 //Parses the next function in the file
-//NEED TO IMPLEMENT PARAMETERS TO FUNCTIONS
 //if nullptr is returned then an error occured
 ParseTree* Parser::parseFunction()
 {
@@ -182,19 +181,23 @@ ParseTree* Parser::parseStatement()
 		return parseCompound();
 	}
 	else if (token == "if") {
-
+		return parseIf();
 	}
 	else if (token == "while") {
-
+		return parseWhile();
 	}
 	else if (token == "for") {
-
+		return parseFor();
 	}
 	else if (token == "return") {
-
+		return parseReturn();
+	}
+	else if (token == ";") {
+		return new ParseTree("empty statement");
 	}
 
 	//determine is type or identifier
+	//DO THIS
 	return nullptr;
 }
 
@@ -212,27 +215,145 @@ ParseTree* Parser::parseCompound() {
 
 ParseTree* Parser::parseIf() {
 	ParseTree* ifStatement = new ParseTree("if");
+	//remove ( token
+	if (it >= tokens.end()) {
+		cout << "Expected (, reached EOF" << endl;
+		return nullptr;
+	}
+	if (*it++ != "(") {
+		cout << "Expected ( after 'if'" << endl;
+		return nullptr;
+	}
 	//parse expression
 	ParseTree* expression = parseExpression();
 	if (expression == nullptr) {
 		cout << "Invalid expression inside if statement" << endl;
 		return nullptr;
 	}
-	ifStatement->addNode(parseExpression());
+	ifStatement->addNode(expression);
+	//remove ) token
+	if (it >= tokens.end()) {
+		cout << "Expected ), reached EOF" << endl;
+		return nullptr;
+	}
+	if (*it++ != ")") {
+		cout << "Expected ) to close if statement expression" << endl;
+		return nullptr;
+	}
 	//parse statement
 	ParseTree* statement = parseStatement();
-	if (expression == nullptr) {
+	if (statement == nullptr) {
 		cout << "Invalid statement attached to if statement" << endl;
 		return nullptr;
 	}
-	ifStatement->addNode(parseStatement());
+	ifStatement->addNode(statement);
 
 	return ifStatement;
 }
-//Expressions
-ParseTree* Parser::parseExpression() {
-	//need to implement
-	return nullptr;
+
+ParseTree* Parser::parseWhile() {
+	ParseTree* whileLoop = new ParseTree("while");
+	//remove ( token
+	if (it >= tokens.end()) {
+		cout << "Expected (, reached EOF" << endl;
+		return nullptr;
+	}
+	if (*it++ != "(") {
+		cout << "Expected ( after 'while'" << endl;
+		return nullptr;
+	}
+	//parse expression
+	ParseTree* expression = parseExpression();
+	if (expression == nullptr) {
+		cout << "Invalid expression inside while loop" << endl;
+		return nullptr;
+	}
+	whileLoop->addNode(expression);
+	//remove ) token
+	if (it >= tokens.end()) {
+		cout << "Expected ), reached EOF" << endl;
+		return nullptr;
+	}
+	if (*it++ != ")") {
+		cout << "Expected ) to close while loop expression" << endl;
+		return nullptr;
+	}
+	//parse statement
+	ParseTree* statement = parseStatement();
+	if (statement == nullptr) {
+		cout << "Invalid statement attached to while loop" << endl;
+		return nullptr;
+	}
+	whileLoop->addNode(statement);
+	return whileLoop;
 }
 
+ParseTree* Parser::parseFor() {
+	ParseTree* forLoop = new ParseTree("for");
+	//remove ( token
+	if (it >= tokens.end()) {
+		cout << "Expected (, reached EOF" << endl;
+		return nullptr;
+	}
+	if (*it++ != "(") {
+		cout << "Expected ( after 'for'" << endl;
+		return nullptr;
+	}
+	//parse statement
+	ParseTree* statement = parseStatement();
+	if (statement == nullptr) {
+		cout << "Invalid statement inside for loop" << endl;
+		return nullptr;
+	}
+	forLoop->addNode(statement);
+	//parse expression
+	ParseTree* expression = parseExpression();
+	if (expression == nullptr) {
+		cout << "Invalid primary expression inside for loop" << endl;
+		return nullptr;
+	}
+	forLoop->addNode(expression);
+	//parse expression
+	expression = parseExpression();
+	if (expression == nullptr) {
+		cout << "Invalid secondary expression inside for loop" << endl;
+		return nullptr;
+	}
+	forLoop->addNode(expression);
+	//remove ) token
+	if (it >= tokens.end()) {
+		cout << "Expected ), reached EOF" << endl;
+		return nullptr;
+	}
+	if (*it++ != ")") {
+		cout << "Expected ) to close for loop expressions" << endl;
+		return nullptr;
+	}
+	//parse statement
+	statement = parseStatement();
+	if (statement == nullptr) {
+		cout << "Invalid statement after for loop" << endl;
+		return nullptr;
+	}
+	forLoop->addNode(statement);
 
+	return forLoop;
+}
+
+ParseTree* Parser::parseReturn() {
+	ParseTree* returnStatement = new ParseTree("return");
+	//parse statement
+	ParseTree* expression = parseExpression();
+	if (expression == nullptr) {
+		cout << "Invalid statement after for loop" << endl;
+		return nullptr;
+	}
+	returnStatement->addNode(expression);
+
+	return returnStatement;
+}
+//Expressions
+ParseTree* Parser::parseExpression() {
+	
+	return nullptr;
+}
