@@ -45,10 +45,7 @@ ParseTree* Parser::parseFunction()
 
 	//get function return type
 	type = *it++;
-	if (!isValidType(type)) {
-		cout << "Return type not valid" << endl;
-		return nullptr;
-	}
+	//type correctness will be handled in the parseTree optimizer
 	function->addNode(new ParseTree(type));
 
 	//get function identifier
@@ -69,20 +66,17 @@ ParseTree* Parser::parseFunction()
 	}
 
 	//get function statement
-	ParseTree* statement = new ParseTree("Statement");//should change to just parse the statement 
-	if (it < tokens.end()) {						  //and not have a node with just the word statement
-		ParseTree* _statement = parseStatement();//possible problem code
-		if (_statement == nullptr) {
-			cout << "Invalid Statement" << endl;
-			return nullptr;
-		}
-		statement->addNode(_statement);
+	if (it >= tokens.end()) {
+		cout << "Expected statement, reach EOF" << endl;
+		return nullptr;
 	}
-	else {
-		cout << "Expected statement, reached EOF" << endl;
+	ParseTree* statement = parseStatement();
+	if (statement == nullptr) {
+		cout << "Invalid statement for function" << endl;
 		return nullptr;
 	}
 	function->addNode(statement);
+
 	return nullptr;//replace later
 }
 //Parses the next set of parameters in the file
@@ -114,12 +108,14 @@ ParseTree* Parser::parseParameters() {
 			parameters->setData("No Parameters");
 
 		//return the constructed parameters tree
+		it++;
 		return parameters;
 	}
 	else {
 		cout << "Expected (, reached EOF or ( is missing" << endl;
 		return nullptr;
 	}
+	//Leaves 'it' on the token after )
 }
 //Parses the next parameter in the file
 //if nullptr is returned then an error occured
@@ -166,25 +162,77 @@ ParseTree* Parser::parseParameter() {
 	if (*it == ",")
 		it++;
 	return parameter;
+	//Leaves 'it' on the token after the parsed parameter
 }
 
 //Parses the next statement in the file
 //if nullptr is returned then an error occured
 ParseTree* Parser::parseStatement()
 {
+	string token;
+	if (it < tokens.end()) 
+		token = *it++;
+	else {
+		cout << "Missing statement" << endl;
+		return nullptr;
+	}
+
+	//Determine the type of statement and act accordingly
+	if (token == "{") {
+		return parseCompound();
+	}
+	else if (token == "if") {
+
+	}
+	else if (token == "while") {
+
+	}
+	else if (token == "for") {
+
+	}
+	else if (token == "return") {
+
+	}
+
+	//determine is type or identifier
 	return nullptr;
 }
-//Determines if a given type is a valid type for the language
-//should remove to allow custom data types in the future
-bool isValidType(string type) {
-	if (type == "int")
-		return true;
-	else if (type == "boolean")
-		return true;
-	else if (type == "double")
-		return true;
-	else if (type == "char")
-		return true;
-	return false;
+
+ParseTree* Parser::parseCompound() {
+	ParseTree* compound = new ParseTree("{ ... }");
+	while (*it != "}") {
+		compound->addNode(parseStatement());//NEEDS to leave it on token after parsed Statement
+		if (it >= tokens.end()) {
+			cout << "Expected to reach }, reached EOF" << endl;
+			return nullptr;
+		}
+	}
+	return compound;
 }
+
+ParseTree* Parser::parseIf() {
+	ParseTree* ifStatement = new ParseTree("if");
+	//parse expression
+	ParseTree* expression = parseExpression();
+	if (expression == nullptr) {
+		cout << "Invalid expression inside if statement" << endl;
+		return nullptr;
+	}
+	ifStatement->addNode(parseExpression());
+	//parse statement
+	ParseTree* statement = parseStatement();
+	if (expression == nullptr) {
+		cout << "Invalid statement attached to if statement" << endl;
+		return nullptr;
+	}
+	ifStatement->addNode(parseStatement());
+
+	return ifStatement;
+}
+//Expressions
+ParseTree* Parser::parseExpression() {
+	//need to implement
+	return nullptr;
+}
+
 
