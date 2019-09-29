@@ -18,7 +18,16 @@ Parser::Parser(vector<string> tokens, string filename)
 	this->filename = filename;
 	this->tokens = tokens;
 	it = tokens.begin();
+	scrapeClassIdentifiers();
+	it = tokens.begin();
 	parseTree = parse();
+}
+//Create a list of class identifiers for later reference
+void Parser::scrapeClassIdentifiers() {
+	while (it + 1 < tokens.end()) {
+		if (*it == "class") 
+			classes.insert(*(++it));
+	}
 }
 //Parses list of tokens into a ParseTree
 ParseTree* Parser::parse()
@@ -169,14 +178,14 @@ ParseTree* Parser::parseParameter() {
 ParseTree* Parser::parseStatement()
 {
 	string token;
-	if (it < tokens.end()) 
+	if (it + 1 < tokens.end()) 
 		token = *it++;
 	else {
-		cout << "Missing statement" << endl;
+		cout << "Expected statement, reached EOF" << endl;
 		return nullptr;
 	}
 
-	//Determine the type of statement and act accordingly
+	//Determine the type of statement and proceed accordingly
 	if (token == "{") {
 		return parseCompound();
 	}
@@ -195,9 +204,12 @@ ParseTree* Parser::parseStatement()
 	else if (token == ";") {
 		return new ParseTree("empty statement");
 	}
-
-	//determine is type or identifier
-	//DO THIS
+	else {
+		if (classes.find(token) != classes.end()) 
+			if (*it != ";" && *it != ".")
+				return parseDeclaration(token);
+		return parseExpressionStatement();
+	}
 	return nullptr;
 }
 
@@ -225,7 +237,7 @@ ParseTree* Parser::parseIf() {
 		return nullptr;
 	}
 	//parse expression
-	ParseTree* expression = parseExpression();
+	ParseTree* expression = parseExpression(")");
 	if (expression == nullptr) {
 		cout << "Invalid expression inside if statement" << endl;
 		return nullptr;
@@ -263,7 +275,7 @@ ParseTree* Parser::parseWhile() {
 		return nullptr;
 	}
 	//parse expression
-	ParseTree* expression = parseExpression();
+	ParseTree* expression = parseExpression(")");
 	if (expression == nullptr) {
 		cout << "Invalid expression inside while loop" << endl;
 		return nullptr;
@@ -307,14 +319,19 @@ ParseTree* Parser::parseFor() {
 	}
 	forLoop->addNode(statement);
 	//parse expression
-	ParseTree* expression = parseExpression();
+	ParseTree* expression = parseExpression(";");
 	if (expression == nullptr) {
 		cout << "Invalid primary expression inside for loop" << endl;
 		return nullptr;
 	}
 	forLoop->addNode(expression);
+	//remove ; token
+	if (++it >= tokens.end()) {
+		cout << "Invalid primary expression in for loop" << endl;
+		return nullptr;
+	}
 	//parse expression
-	expression = parseExpression();
+	expression = parseExpression(")");
 	if (expression == nullptr) {
 		cout << "Invalid secondary expression inside for loop" << endl;
 		return nullptr;
@@ -343,7 +360,7 @@ ParseTree* Parser::parseFor() {
 ParseTree* Parser::parseReturn() {
 	ParseTree* returnStatement = new ParseTree("return");
 	//parse statement
-	ParseTree* expression = parseExpression();
+	ParseTree* expression = parseExpression(";");
 	if (expression == nullptr) {
 		cout << "Invalid statement after for loop" << endl;
 		return nullptr;
@@ -352,8 +369,42 @@ ParseTree* Parser::parseReturn() {
 
 	return returnStatement;
 }
+
+ParseTree* Parser::parseDeclaration(string token) {
+	ParseTree* declaration = new ParseTree(token);
+	while (*it != ";") {
+		//get identifier
+		ParseTree* identifier = new ParseTree(*it++);
+		declaration->addNode(identifier);
+		//equals token
+		if (it >= tokens.end() || *it != "=") {
+			cout << "Invalid variable definition, missing = or EOF reached prematurely" << endl;
+			return nullptr;
+		}
+		//get expression
+		ParseTree* expression = parseExpression(",");
+		if (expression == nullptr) {
+			cout << "Invalid expression in variable definition" << endl;
+			return nullptr;
+		}
+		//remove comma
+		if (*it == ",")
+			if (it + 1 < tokens.end())
+				it++;
+			else {
+				cout << "Expected to reach ; in variable definition, reached EOF" << endl;
+				return nullptr;
+			}
+	}
+	return nullptr;
+}
+
+ParseTree* Parser::parseExpressionStatement() {
+	return nullptr;
+}
 //Expressions
-ParseTree* Parser::parseExpression() {
+//stop if stopToken is reached or ;
+ParseTree* Parser::parseExpression(string stopToken) {
 	
 	return nullptr;
 }
